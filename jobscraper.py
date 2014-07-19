@@ -17,7 +17,7 @@ wt.update_companies_jobs_lists()
 
 class WTScraper(object):
 
-	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False, persistent=False, json_file_name=None):
+	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False, persistent=False, json_file_name=None, keyword=""):
 		self.email = email
 		self.password = password
 		self.session = self.get_authenticated_session(self.email, self.password)
@@ -27,6 +27,8 @@ class WTScraper(object):
 		self.locations = locations
 		self.specializations = specializations
 		self.remote = remote
+
+		self.keyword = keyword
 
 		# For serialization and persisting data.
 		# Can't be non-persistent if you give a file name.
@@ -76,10 +78,11 @@ class WTScraper(object):
 	@property
 	def search_params(self):
 		search_params = {
-			"skills": self.skills, 
+			"skills": self.skills,
 			"locations": self.locations, 
 			"specializations": self.specializations,
 			"remote": self.remote,
+			"keyword": self.keyword,
 		}
 		return {k:v for k,v in search_params.items() if v}
 
@@ -98,8 +101,9 @@ class WTScraper(object):
 		else:
 			print "Login Failed. Type Better, Fail Harder"
 
-	def update_companies_jobs_lists(self):
-		for cid, company in self.companies.items():
+	def update_companies_jobs_lists(self, only_new=False):
+		to_update = self.recently_added if only_new else self.companies
+		for cid, company in to_update.items():
 			joblist = {}
 			try:
 				joblist = self.get_joblist_for_company(cid)
@@ -116,7 +120,8 @@ class WTScraper(object):
 		"""
 		Default NYC because Brian is writing this.
 		"""
-		search_params = {"keyword":"","skills":[],"locations":[{"latitude":40.67,"longitude":-73.94}],"specializations":[],"remote":int(self.remote)}.update(self.search_params)
+		search_params = {"keyword":"","skills":[],"locations":[{"latitude":40.67,"longitude":-73.94}],"specializations":[],"remote":int(self.remote)}
+		search_params.update(self.search_params)
 
 		headers = {'Accept-Encoding': ' gzip,deflate,sdch',
 		'Accept-Language': ' en-US,en;q=0.8',
@@ -135,8 +140,9 @@ class WTScraper(object):
 		"""
 		new_companies = {k:v for k,v in self.get_list_of_companies().items() if k not in self.companies}
 		self.companies.update(new_companies)
-		self.update_companies_jobs_lists()
 		self.recently_added = {k: self.companies[k] for k in new_companies}
+		self.companies_by_names.update({c["name"]: c for k, c in self.recently_added.items()})
+		self.update_companies_jobs_lists(only_new=True)
 
 
 	def get_joblist_for_company(self, company):
