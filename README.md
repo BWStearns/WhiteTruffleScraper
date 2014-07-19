@@ -1,4 +1,5 @@
-#White Truffle API Scraper
+#Leaky Truffle
+##A White Truffle API Scraper
 
 #Their interface is so lovely, why scrape?
 White Truffle has More Info than they show, including employers' self selected pay ranges.

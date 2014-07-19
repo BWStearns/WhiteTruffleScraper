@@ -4,9 +4,9 @@ import json
 """
 Example Use:
 
-from jobscraper import WTScraper
+from jobscraper import LeakyTruffle
 
-wt = WTScraper("brian@whatever.com", "myp4ssword4white_truffle" [, other search_params you might want])
+wt = LeakyTruffle("brian@whatever.com", "myp4ssword4white_truffle" [, other search_params you might want])
 # wait a second for it to go get companies 
 
 # The jobs that the companies list has aren't very descriptive.
@@ -15,7 +15,7 @@ wt.update_companies_jobs_lists()
 
 """
 
-class WTScraper(object):
+class LeakyTruffle(object):
 
 	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False, persistent=False, json_file_name=None, keyword=""):
 		self.email = email
