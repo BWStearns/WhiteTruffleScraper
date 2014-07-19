@@ -52,7 +52,7 @@ class WTScraper(object):
 		if self._persistent:
 			json_file = file(self.json_file_name, "w")
 			json_file.write(json.dumps(self.companies))
-			json_file.save()
+			json_file.close()
 
 	def _load(self):
 		if self._persistent:
@@ -127,6 +127,16 @@ class WTScraper(object):
 
 		employer_list = self.session.post("https://www.whitetruffle.com/c/search_explore", data=json.dumps(search_params), headers=headers).json()
 		return employer_list
+
+
+	def add_companies_from_new_search(self):
+		"""
+		To not get same results change some of the params between __init__ and using this..
+		"""
+		new_companies = {k:v for k,v in self.get_list_of_companies().items() if k not in self.companies}
+		self.companies.update(new_companies)
+		self.update_companies_jobs_lists()
+		self.recently_added = {k: self.companies[k] for k in new_companies}
 
 
 	def get_joblist_for_company(self, company):
