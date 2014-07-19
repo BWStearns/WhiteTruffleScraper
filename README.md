@@ -22,8 +22,6 @@ Add the arg `persistent=True` if you want it to silently save to a .file in the 
 	# Let's update those from the other API endpoints.
 	wt.update_companies_jobs_lists()
 
-	from pprint import pprint
-
 	wt.jobs_pay_skills["Yo"]
 	[
 		{'title': {
