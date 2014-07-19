@@ -52,6 +52,7 @@ class WTScraper(object):
 		if self._persistent:
 			json_file = file(self.json_file_name, "w")
 			json_file.write(json.dumps(self.companies))
+			json_file.save()
 
 	def _load(self):
 		if self._persistent:
