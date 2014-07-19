@@ -17,7 +17,7 @@ wt.update_companies_jobs_lists()
 
 class WTScraper(object):
 
-	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False):
+	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False, persistent=False, json_file_name=None):
 		self.email = email
 		self.password = password
 		self.session = self.get_authenticated_session(self.email, self.password)
@@ -27,8 +27,37 @@ class WTScraper(object):
 		self.locations = locations
 		self.specializations = specializations
 		self.remote = remote
-		self.companies = self.get_list_of_companies()
-		self.companies_by_names = {c["name"]: c for k, c in self.companies.items()}
+
+		# For serialization and persisting data.
+		# Can't be non-persistent if you give a file name.
+		self._persistent = persistent if not json_file_name else True
+		self.json_file_name = json_file_name
+
+
+		if not self._persistent and not self.json_file_name:
+			self.companies = self.get_list_of_companies()
+			self.companies_by_names = {c["name"]: c for k, c in self.companies.items()}
+
+		if self._persistent:
+			self.json_file_name = json_file_name or ".preserved_companies.json"
+			try:
+				self._load()
+			except :
+				self.companies = self.get_list_of_companies()
+				self.companies_by_names = {c["name"]: c for k, c in self.companies.items()}
+				self._save()
+
+
+	def _save(self):
+		if self._persistent:
+			json_file = file(self.json_file_name, "w")
+			json_file.write(json.dumps(self.companies))
+
+	def _load(self):
+		if self._persistent:
+			json_file = open(self.json_file_name)
+			self.companies = json.loads(json_file.read())
+			self.companies_by_names = {c["name"]: c for k, c in self.companies.items()}
 
 	def __getitem__(self, item):
 		try:
@@ -78,6 +107,9 @@ class WTScraper(object):
 			self.companies[cid]["positions"] = joblist
 			self.companies_by_names[company["name"]]["positions"] = joblist
 
+		self.set_jobs_pay_skills()
+		self._save()
+
 
 	def get_list_of_companies(self):
 		"""
@@ -113,4 +145,16 @@ class WTScraper(object):
 		return job_list
 
 
+	def set_jobs_pay_skills(self):
+		res = {}
+		for cid, company in self.companies.items():
+			res[company["name"]] = [
+				{"title": {
+						"title": p["title"],
+						"pay_range": (p["min_salary"], p["max_salary"]),
+						"equity_range": (p["min_salary"], p["max_salary"]),
+						"skills": p["skills"],
+					}
+				} for p in company["positions"]["jobs"] ]
 
+		self.jobs_pay_skills = res

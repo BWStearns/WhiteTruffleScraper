@@ -3,6 +3,8 @@
 #Their interface is so lovely, why scrape?
 White Truffle has More Info than they show, including employers' self selected pay ranges ;p
 
+Add the arg `persistent=True` if you want it to silently save to a .file in the current direcory. You can also assign a file path yourself using the `json_file_name` arg.
+
 # Example Use:
 
 	from jobscraper import WTScraper
