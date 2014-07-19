@@ -5,7 +5,12 @@ White Truffle has More Info than they show, including employers' self selected p
 
 Add the arg `persistent=True` if you want it to silently save to a .file in the current direcory. You can also assign a file path yourself using the `json_file_name` arg.
 
-# Example Use:
+## Todo
++ Make company/jobs objects so you're not in __getitem__/brackets hell.
++ Some kind of search capability.
++ Ideas?
+
+## Example Use:
 
 	from jobscraper import WTScraper
 
@@ -173,3 +178,5 @@ Add the arg `persistent=True` if you want it to silently save to a .file in the 
 	            u'Rails',
 	            u'Ruby'],
 	  u'title': u'Expert in Web Technologies'}]
+
+
