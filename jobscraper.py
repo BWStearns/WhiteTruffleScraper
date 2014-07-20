@@ -196,7 +196,7 @@ class Company(object):
 	def search_by(cls, *args, **tests):
 		def run_tests(pos, tests=tests):
 			value = getattr(pos, attr)
-			return all([passing(value) for attr, passing in  tests.items()) if callable(passing) else value == passing]
+			return all([passing(value) if callable(passing) else value == passing for attr, passing in tests.items()])
 
 		return [pos for pos in cls.all_positions if run_tests(pos)]
 
@@ -216,7 +216,7 @@ class Position(object):
 	def search_by(cls, *args, **tests):
 		def run_tests(pos, tests=tests):
 			value = getattr(pos, attr)
-			return all([passing(value) for attr, passing in  tests.items()) if callable(passing) else value == passing]
+			return all([passing(value) if callable(passing) else value == passing for attr, passing in tests.items()])
 
 		return [pos for pos in cls.all_positions if run_tests(pos)]
 
@@ -248,8 +248,8 @@ class Position(object):
 		self.company.employees_enum = self.company.employees_enum or raw.get("employees_enum", "")
 		
 		# Set-like stuff with selected or not.
-		self.company.perks = self.company.perks or set([p['public_name'] for p in raw.get("perks", "")] if p["selected"])
-		self.company.benefits = self.company.benefits or set([p['public_name'] for p in raw.get("benefits", "")] if p["selected"])
+		self.company.perks = self.company.perks or set([p['public_name'] for p in raw.get("perks", "") if p["selected"]])
+		self.company.benefits = self.company.benefits or set([p['public_name'] for p in raw.get("benefits", "") if p["selected"]])
 		
 
 
