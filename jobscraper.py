@@ -15,6 +15,12 @@ wt.update_companies_jobs_lists()
 
 """
 
+# Should be in str_utils file.
+def convert(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
 class LeakyTruffle(object):
 
 	def __init__(self, email, password, skills=[], locations=[], specializations=[], remote=False, persistent=False, json_file_name=None, keyword=""):
@@ -176,11 +182,30 @@ class LeakyTruffle(object):
 
 		self.jobs_pay_skills = res
 
+	def load_company_objects():
+		for c in self.companies.values():
+			Company(c)
+
+
 class Company(object):
-	def __init__(self, name, location):
-		self.name = name
-		self.location = location
-		self.positions = []
+
+	all_companies = []
+
+	@classmethod
+	def search_by(cls, *args, **tests):
+		def run_tests(pos, tests=tests):
+			value = getattr(pos, attr)
+			return all([passing(value) for attr, passing in  tests.items()) if callable(passing) else value == passing]
+
+		return [pos for pos in cls.all_positions if run_tests(pos)]
+
+	def __init__(self, raw):
+		Company.all_companies.append(self)
+		self.name = raw.get("name", name)
+		self.location = raw.get("location", location)
+		self.positions = [Position(pos, raw) for pos in raw["positions"]["job"]]
+		for pos in self.positions:
+			setattr(convert(pos.title), pos)
 
 class Position(object):
 
