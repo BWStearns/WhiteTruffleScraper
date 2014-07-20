@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 import requests
 import json
 import re
@@ -18,8 +20,9 @@ wt.update_companies_jobs_lists()
 
 # Should be in str_utils file.
 def convert(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    s = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
+    return "".join(filter(lambda x: ord(x)<128, s))
 
 
 class LeakyTruffle(object):
@@ -182,8 +185,9 @@ class LeakyTruffle(object):
 				} for p in company["positions"]["jobs"] ]
 
 		self.jobs_pay_skills = res
+		self.load_company_objects()
 
-	def load_company_objects():
+	def load_company_objects(self):
 		for c in self.companies.values():
 			Company(c)
 
@@ -195,18 +199,17 @@ class Company(object):
 	@classmethod
 	def search_by(cls, *args, **tests):
 		def run_tests(pos, tests=tests):
-			value = getattr(pos, attr)
-			return all([passing(value) if callable(passing) else value == passing for attr, passing in tests.items()])
+			return all([passing(pos) if callable(passing) else getattr(pos, attr) == passing for attr, passing in tests.items()])
 
 		return [pos for pos in cls.all_positions if run_tests(pos)]
 
 	def __init__(self, raw):
 		Company.all_companies.append(self)
-		self.name = raw.get("name", name)
-		self.location = raw.get("location", location)
-		self.positions = [Position(pos, raw) for pos in raw["positions"]["job"]]
+		self.name = raw.get("name", "")
+		self.location = raw.get("location", "")
+		self.positions = [Position(self, pos, raw) for pos in raw["positions"]["jobs"]]
 		for pos in self.positions:
-			setattr(convert(pos.title), pos)
+			setattr(self, convert(pos.title), pos)
 
 class Position(object):
 
@@ -214,11 +217,9 @@ class Position(object):
 
 	@classmethod
 	def search_by(cls, *args, **tests):
-		def run_tests(pos, tests=tests):
-			value = getattr(pos, attr)
-			return all([passing(value) if callable(passing) else value == passing for attr, passing in tests.items()])
-
-		return [pos for pos in cls.all_positions if run_tests(pos)]
+		def run_tests(pos, **tests):
+			return all([passing(pos) if callable(passing) else getattr(pos, attr) == passing for attr, passing in tests.items()])
+		return [pos for pos in cls.all_positions if run_tests(pos, **tests)]
 
 
 	def __init__(self, company, job_raw={}, raw={}):
@@ -240,26 +241,19 @@ class Position(object):
 		self.tags = set(job_raw.get("tags", []))
 		
 		# Update company stuff, dunno why they store this in the positions info and not company or job.
-		self.company.about = self.company.about or raw.get("about", "")
-		self.company.hours = self.company.hours or raw.get("hours", "")
-		self.company.mission_statement = self.company.mission_statement or raw.get("mission_statement", "")
-		self.company.workflow = self.company.workflow or raw.get("workflow", "")
-		self.company.website_url = self.company.website_url or raw.get("website_url", "")
-		self.company.employees_enum = self.company.employees_enum or raw.get("employees_enum", "")
+		self.company.about = self.company.about if hasattr(self.company, "about") else raw.get("about", "")
+		self.company.hours = self.company.hours if hasattr(self.company, "hours") else raw.get("hours", "")
+		self.company.mission_statement = self.company.mission_statement if hasattr(self.company, "mission_statement") else raw.get("mission_statement", "")
+		self.company.workflow = self.company.workflow if hasattr(self.company, "workflow") else raw.get("workflow", "")
+		self.company.website_url = self.company.website_url if hasattr(self.company, "website_url") else raw.get("website_url", "")
+		self.company.employees_enum = self.company.employees_enum if hasattr(self.company, "employees_enum") else raw.get("employees_enum", "")
 		
 		# Set-like stuff with selected or not.
-		self.company.perks = self.company.perks or set([p['public_name'] for p in raw.get("perks", "") if p["selected"]])
-		self.company.benefits = self.company.benefits or set([p['public_name'] for p in raw.get("benefits", "") if p["selected"]])
-		
+		self.company.perks = self.company.perks if hasattr(self.company, "perks") else set([p['public_name'] for p in raw.get("perks", "") if p["selected"]])
+		self.company.benefits = self.company.benefits if hasattr(self.company, "benefits") else set([p['public_name'] for p in raw.get("benefits", "") if p["selected"]])
 
-
-
-
-
-
-
-
-
+	def in_salary_range(self, value):
+		return (self.min_salary or 0) < value < self.max_salary
 
 
 
