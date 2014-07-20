@@ -253,6 +253,8 @@ class Position(object):
 		self.company.benefits = self.company.benefits if hasattr(self.company, "benefits") else set([p['public_name'] for p in raw.get("benefits", "") if p["selected"]])
 
 	def in_salary_range(self, value):
+		if self.min_salary == None and self.max_salary == None:
+			return True
 		return (self.min_salary or 0) < value < self.max_salary
 
 
