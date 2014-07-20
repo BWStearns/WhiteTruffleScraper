@@ -61,6 +61,7 @@ class LeakyTruffle(object):
 			json_file = open(self.json_file_name)
 			self.companies = json.loads(json_file.read())
 			self.companies_by_names = {c["name"]: c for k, c in self.companies.items()}
+			self.set_jobs_pay_skills()
 
 	def __getitem__(self, item):
 		try:
@@ -166,8 +167,7 @@ class LeakyTruffle(object):
 		res = {}
 		for cid, company in self.companies.items():
 			res[company["name"]] = [
-				{"title": {
-						"title": p["title"],
+				{p["title"]: {
 						"pay_range": (p["min_salary"], p["max_salary"]),
 						"equity_range": (p["min_salary"], p["max_salary"]),
 						"skills": p["skills"],
@@ -175,3 +175,4 @@ class LeakyTruffle(object):
 				} for p in company["positions"]["jobs"] ]
 
 		self.jobs_pay_skills = res
+

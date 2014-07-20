@@ -24,10 +24,11 @@ Add the arg `persistent=True` if you want it to silently save to a .file in the 
 
 	wt.jobs_pay_skills["Yo"]
 	[
-		{'title': {
-			'equity_range': (110000.0, 140000.0),
-		   'pay_range': (110000.0, 140000.0),
-		   'skills': [u'Android'],
-		   'title': u'Android Developer'}
+		{u'Android Developer': 
+			{
+				'equity_range': (110000.0, 140000.0),
+			   	'pay_range': (110000.0, 140000.0),
+			   	'skills': [u'Android'],
+			}
 		}
 	]
