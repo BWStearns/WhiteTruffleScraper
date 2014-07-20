@@ -142,6 +142,10 @@ class LeakyTruffle(object):
 		'Referer': ' https://www.whitetruffle.com/c/explore',}
 
 		employer_list = self.session.post("https://www.whitetruffle.com/c/search_explore", data=json.dumps(search_params), headers=headers).json()
+
+		if not isinstance(employer_list, dict):
+			import ipdb; ipdb.set_trace()
+
 		return employer_list
 
 
@@ -176,13 +180,17 @@ class LeakyTruffle(object):
 	def set_jobs_pay_skills(self):
 		res = {}
 		for cid, company in self.companies.items():
-			res[company["name"]] = [
-				{p["title"]: {
-						"pay_range": (p["min_salary"], p["max_salary"]),
-						"equity_range": (p["min_equity"], p["max_equity"]),
-						"skills": p["skills"],
-					}
-				} for p in company["positions"]["jobs"] ]
+			if isinstance(company["positions"], dict):
+				res[company["name"]] = [
+					{p["title"]: {
+							"pay_range": (p["min_salary"], p["max_salary"]),
+							"equity_range": (p["min_equity"], p["max_equity"]),
+							"skills": p["skills"],
+						}
+					} for p in company["positions"]["jobs"] ]
+			# There was some weirdness going on here where it was claiming company["position"] was unicode...
+			else:
+				print company["positions"]
 
 		self.jobs_pay_skills = res
 		self.load_company_objects()
