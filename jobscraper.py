@@ -169,10 +169,73 @@ class LeakyTruffle(object):
 			res[company["name"]] = [
 				{p["title"]: {
 						"pay_range": (p["min_salary"], p["max_salary"]),
-						"equity_range": (p["min_salary"], p["max_salary"]),
+						"equity_range": (p["min_equity"], p["max_equity"]),
 						"skills": p["skills"],
 					}
 				} for p in company["positions"]["jobs"] ]
 
 		self.jobs_pay_skills = res
+
+class Company(object):
+	def __init__(self, name, location):
+		self.name = name
+		self.location = location
+		self.positions = []
+
+class Position(object):
+
+	all_positions = []
+
+	@classmethod
+	def search_by(cls, *args, **tests):
+		def run_tests(pos, tests=tests):
+			value = getattr(pos, attr)
+			return all([passing(value) for attr, passing in  tests.items()) if callable(passing) else value == passing]
+
+		return [pos for pos in cls.all_positions if run_tests(pos)]
+
+
+	def __init__(self, company, job_raw={}, raw={}):
+		Position.all_positions.append(self)
+		self.company = company
+		self.title = job_raw.get("title", "")
+
+		# Compensation
+		self.min_salary = job_raw.get("min_salary", None)
+		self.max_salary = job_raw.get("max_salary", None)
+		self.min_equity = job_raw.get("min_equity", None)
+		self.max_equity = job_raw.get("max_equity", None)
+
+		# Other
+
+		# Set-like stuff
+		self.skills = set(job_raw.get("skills", []))
+		self.specializations = set(job_raw.get("specializations", []))
+		self.tags = set(job_raw.get("tags", []))
+		
+		# Update company stuff, dunno why they store this in the positions info and not company or job.
+		self.company.about = self.company.about or raw.get("about", "")
+		self.company.hours = self.company.hours or raw.get("hours", "")
+		self.company.mission_statement = self.company.mission_statement or raw.get("mission_statement", "")
+		self.company.workflow = self.company.workflow or raw.get("workflow", "")
+		self.company.website_url = self.company.website_url or raw.get("website_url", "")
+		self.company.employees_enum = self.company.employees_enum or raw.get("employees_enum", "")
+		
+		# Set-like stuff with selected or not.
+		self.company.perks = self.company.perks or set([p['public_name'] for p in raw.get("perks", "")] if p["selected"])
+		self.company.benefits = self.company.benefits or set([p['public_name'] for p in raw.get("benefits", "")] if p["selected"])
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
 

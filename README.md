@@ -2,7 +2,7 @@
 ##A White Truffle API Scraper
 
 #Their interface is so lovely, why scrape?
-White Truffle has More Info than they show, including employers' self selected pay ranges.
+While looking for a new job today (anyone in NYC hiring?) I found that White Truffle sends the browser more info than they show, including employers' self selected pay ranges. Clearly this might be nice to have to limit the information asymmetry of negotiations.
 
 Add the arg `persistent=True` if you want it to silently save to a .file in the current direcory. You can also assign a file path yourself using the `json_file_name` arg.
 
