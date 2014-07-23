@@ -6,6 +6,13 @@ While looking for a new job today (anyone in NYC hiring?) I found that White Tru
 
 Add the arg `persistent=True` if you want it to silently save to a .file in the current direcory. You can also assign a file path yourself using the `json_file_name` arg.
 
+##PSA
+They've updated their APIs, they're now just as informative as they need to be to fill out the (again, lovely) UI. Knew it was coming, sorry to anyone else who had noticed this in private and was enjoying the info.
+
+WhiteTruffle team, thanks for being good sports :)
+
+I might still improve the Company/Position classes for anyone who has their own persisted dataset and wants to play with it a bit.
+
 ## Todo
 + Make company/jobs objects so you're not in __getitem__/brackets hell.
 + Some kind of search capability.

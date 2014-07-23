@@ -22,7 +22,7 @@ wt.update_companies_jobs_lists()
 def convert(name):
     s = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     s = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s).lower()
-    return "".join(filter(lambda x: ord(x)<128, s))
+    return "".join(filter(lambda x: ord(x)<128, s)).replace(" ", "")
 
 
 class LeakyTruffle(object):
@@ -211,6 +211,11 @@ class Company(object):
 
 		return [pos for pos in cls.all_positions if run_tests(pos)]
 
+	@classmethod
+	def find(cls, search_term):
+		return [comp for comp in cls.all_companies if search_term in comp.wordbag]
+
+
 	def __init__(self, raw):
 		Company.all_companies.append(self)
 		self.name = raw.get("name", "")
@@ -218,6 +223,22 @@ class Company(object):
 		self.positions = [Position(self, pos, raw) for pos in raw["positions"]["jobs"]]
 		for pos in self.positions:
 			setattr(self, convert(pos.title), pos)
+
+	def __repr__(self):
+		return unicode(self.name)
+
+	@property
+	def wordbag(self):
+	    return u" ".join(sum([], [list(x) for x in self.__dict__.values()]))
+
+	@classmethod
+	def find(cls, search_terms):
+		search_terms = search_terms if isinstance(search_terms, list) else [t.strip() for t in search_terms.split(",")]
+		companies = cls.all_companies
+		for term in search_terms:
+			companies = [comp for comp in companies if term in comp.wordbag]
+		return companies
+		
 
 class Position(object):
 
@@ -260,12 +281,26 @@ class Position(object):
 		self.company.perks = self.company.perks if hasattr(self.company, "perks") else set([p['public_name'] for p in raw.get("perks", "") if p["selected"]])
 		self.company.benefits = self.company.benefits if hasattr(self.company, "benefits") else set([p['public_name'] for p in raw.get("benefits", "") if p["selected"]])
 
+	def __repr__(self):
+		return u"{0} at {1}".format(self.title, self.company.name)
+
+
 	def in_salary_range(self, value):
 		if self.min_salary == None and self.max_salary == None:
 			return True
 		return (self.min_salary or 0) < value < self.max_salary
 
+	@property
+	def wordbag(self):
+	    return " ".join(sum([], [unicode(x) for x in self.__dict__.values()]))
 
+	@classmethod
+	def find(cls, search_terms):
+		search_terms = search_terms if isinstance(search_terms, list) else [t.strip() for t in search_terms.split(",")]
+		positions = cls.all_positions
+		for term in search_terms:
+			positions = [pos for pos in positions if term in pos.wordbag]
+		return positions
 
 
 
